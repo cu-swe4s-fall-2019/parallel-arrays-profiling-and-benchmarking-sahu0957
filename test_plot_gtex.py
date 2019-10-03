@@ -37,5 +37,6 @@ class TestPlotGtex(unittest.TestCase):
         test_idx = plot_gtex.linear_search(group_col_name, sample_info_header)
         self.assertEqual(test_idx, 6)
 
+
 if __name__ == '__main__':
     unittest.main()

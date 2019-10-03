@@ -6,7 +6,7 @@ from os import path
 
 
 class TestDataViz(unittest.TestCase):
-    
+
     def test_data_viz_multiple_lists_boxplot(self):
         L = [[1, 2, 3, 4, 5], [3, 3, 3, 3, 3],
              [5, 5, 5, 5, 5], [10, 20, 30, 40, 50]]

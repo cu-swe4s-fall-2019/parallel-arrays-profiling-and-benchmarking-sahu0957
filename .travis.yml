@@ -12,3 +12,5 @@ before_install:
     - conda install --yes python=3.6
       
 script:
+    - python test_data_viz.py
+    - pycodestyle test_data_viz.py

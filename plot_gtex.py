@@ -1,7 +1,10 @@
 import data_viz
+import time
 import argparse
 import sys
 import gzip
+import os
+from os import path
 
 def linear_search(key, L):
     hit = -1
@@ -12,8 +15,21 @@ def linear_search(key, L):
     return -1
         
 
-def binary_serach(key, L):
-    pass
+def binary_search(key, D):
+    lo = -1
+    hi = len(D)
+    while (hi - lo > 1):
+        mid = (hi + lo) // 2
+
+        if key == D[mid][0]:
+            return D[mid][1]
+
+        if ( key < D[mid][0] ):
+            hi = mid
+        else:
+            lo = mid
+
+    return -1
 
 def main():
     parser = argparse.ArgumentParser(
@@ -26,10 +42,25 @@ def main():
     parser.add_argument("--search_type", help="search type", default="linear", type=str)
 
     args = parser.parse_args()
-    # Test that linear search returns the correct index for a known location
-    data_file_name = args.gene_reads
-    sample_info_file_name = args.sample_attributes
-    # This is the seventh column, so it should return an index of 6
+    # Check to make sure proper search function is specified
+    if (args.search_type == 'linear' or args.search_type == 'binary'):
+        pass
+    else:
+        print('search parameter not recognized! Exiting...')
+        sys.exit(1)
+
+    # Check to make sure all paths exist 
+    if path.exists(args.gene_reads):
+        data_file_name = args.gene_reads
+    else:
+        print("gene file does not exist! exiting...")
+        sys.exit(1)
+    if path.exists(args.sample_attributes):
+        sample_info_file_name = args.sample_attributes
+    else:
+        print("attributes file does not exist! exiting...")
+        sys.exit(1)
+
     group_col_name = args.group_type
     gene_name = args.gene
     sample_id_col_name = 'SAMPID'
@@ -48,25 +79,24 @@ def main():
     sample_id_col_idx = linear_search(sample_id_col_name, sample_info_header)
     groups = []
     members = []
-
+   
     for row_idx in range(len(samples)):
         sample = samples[row_idx]
         sample_name = sample[sample_id_col_idx]
         curr_group = sample[group_col_idx]
         curr_group_idx = linear_search(curr_group, groups)
-
+        # Only add to groups if the current index isn't found in our growing
+        # groups list
         if curr_group_idx == -1:
             curr_group_idx = len(groups)
             groups.append(curr_group)
             members.append([])
-
+        # Parallel array linking samples (members) to their tissue type (group)
         members[curr_group_idx].append(sample_name)
     version = None
     dim = None
     data_header = None
-
     gene_name_col = 1
-    print(groups)
     group_counts = [ [] for i in range(len(groups)) ]
     for l in gzip.open(data_file_name, 'rt'):
         if version == None:
@@ -80,23 +110,26 @@ def main():
         if data_header == None:
             data_header = []
             i = 0
-            for field in l.rstrip().split('\t'):
-                data_header.append([field, i])
-                i += 1
+            if args.search_type == 'linear':
+                data_header = l.rstrip().split('\t')
+            elif args.search_type == 'binary':
+                # binary search requires including tuples for sorting
+                for field in l.rstrip().split('\t'):
+                    data_header.append([field, i])
+                    i += 1
             # Sort in preparation for binary search
-            if args.search_type == "binary":
                 data_header.sort(key=lambda tup: tup[0])
-
-            continue
-
+        # Parallel array containing read counts for each sample
         A = l.rstrip().split('\t')
-        print(members) 
         if A[gene_name_col] == gene_name:
             for group_idx in range(len(groups)):
                 for member in members[group_idx]:
-                    members_idx = linear_search(member, data_header)
+                    if args.search_type == 'linear':
+                        members_idx = linear_search(member, data_header)
+                    else:
+                        members_idx = binary_search(member, data_header)
                     if members_idx != -1:
-                        group_counts[group_idx].append(int(A[member_idx]))
+                        group_counts[group_idx].append(int(A[members_idx]))
             break
 
     print(group_counts)

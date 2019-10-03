@@ -26,7 +26,7 @@ def boxplot(L, out_file_name):
     except TypeError:
         # Nonnumber entries will cause an error
         raise TypeError('List contains nonnumber entries!')
-
+        sys.exit(0)
 
 def histogram(L, out_file_name):
     # Empty files will be handled by returning None, to avoid
@@ -67,3 +67,4 @@ def combo(L, out_file_name):
         # Boxplots can't handle nonnumber entries, so
         # this will throw an error
         raise('Nonnumber entries in list!')
+        sys.exit(0)

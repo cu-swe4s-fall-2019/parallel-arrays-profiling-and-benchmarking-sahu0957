@@ -25,7 +25,7 @@ def boxplot(L, out_file_name):
         plt.savefig(out_file_name, bbox_inches='tight')
     except TypeError:
         # Nonnumber entries will cause an error
-        raise TypeError('List contains nonnumber entries!')
+        return('List contains nonnumber entries!')
         sys.exit(0)
 
 def histogram(L, out_file_name):
@@ -66,5 +66,5 @@ def combo(L, out_file_name):
     except TypeError:
         # Boxplots can't handle nonnumber entries, so
         # this will throw an error
-        raise('Nonnumber entries in list!')
+        return('Nonnumber entries in list!')
         sys.exit(0)

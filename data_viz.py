@@ -11,6 +11,8 @@ def boxplot(L, out_file_name):
     # any errors in processing
     if len(L) == 0:
         return None
+    # List of lists will return multiple boxplots on the
+    # same plot
     try:
         width = 3
         height = 3
@@ -64,4 +66,4 @@ def combo(L, out_file_name):
     except TypeError:
         # Boxplots can't handle nonnumber entries, so
         # this will throw an error
-        raise TypeError('Nonnumber entries in list!')
+        raise('Nonnumber entries in list!')

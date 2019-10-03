@@ -36,7 +36,28 @@ class TestPlotGtex(unittest.TestCase):
         # Find the index of the group name in the info file
         test_idx = plot_gtex.linear_search(group_col_name, sample_info_header)
         self.assertEqual(test_idx, 6)
+   
+    def test_plot_gtex_binary_search_first(self):
+        L = ['foo', 'bar', 'tar']
+        i = 0
+        test = []
+        for f in L:
+            test.append([L[i], i])
+            i += 1
+        test.sort(key=lambda tup: tup[0])
+        r = plot_gtex.binary_search('foo', test)
+        self.assertEqual(r, 0)
 
+    def test_plot_gtex_binary_search_last(self):
+        L = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
+        i = 0
+        test = []
+        for f in L:
+            test.append([L[i], i])
+            i += 1
+        r = plot_gtex.binary_search('g', test)
+        self.assertEqual(r, 6)
+ 
 
 if __name__ == '__main__':
     unittest.main()

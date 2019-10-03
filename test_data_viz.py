@@ -28,8 +28,8 @@ class TestDataViz(unittest.TestCase):
     def test_data_viz_nonnumber_boxplot(self):
         # Test handling of nonnumber entries
         L = ['foo', 'bar']
-        self.assertIn(data_viz.boxplot(L, 'boxplot.png'),
-                      'List contains nonnumber entries!')
+        with self.assertRaises(TypeError) as ex:
+            data_viz.boxplot(L, 'boxplot.png')
 
     def test_data_viz_float_boxplot(self):
         # Test handling of floats
@@ -72,8 +72,8 @@ class TestDataViz(unittest.TestCase):
     def test_data_viz_nonnumber_combo(self):
         # Test error handling with nonnumber entries
         L = ['foo', 'bar']
-        self.assertIn(data_viz.boxplot(L, 'combo.png'),
-                      'List contains nonnumber entries!')
+        with self.assertRaises(TypeError) as ex:
+            data_viz.combo(L, 'combo.png')
 
     def test_data_viz_float_combo(self):
         # Test script's robustness with floats

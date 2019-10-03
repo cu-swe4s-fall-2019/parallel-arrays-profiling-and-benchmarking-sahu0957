@@ -1,5 +1,4 @@
 import data_viz
-import time
 import argparse
 import sys
 import gzip
@@ -93,6 +92,7 @@ def main():
             members.append([])
         # Parallel array linking samples (members) to their tissue type (group)
         members[curr_group_idx].append(sample_name)
+    
     version = None
     dim = None
     data_header = None
@@ -132,7 +132,6 @@ def main():
                         group_counts[group_idx].append(int(A[members_idx]))
             break
 
-    print(group_counts)
     data_viz.boxplot(group_counts, 'boxplot.png')
 
 if __name__ == '__main__':

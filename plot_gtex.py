@@ -1,4 +1,5 @@
 import data_viz
+import time
 import argparse
 import sys
 import gzip
@@ -112,6 +113,8 @@ def main():
     data_header = None
     gene_name_col = 1
     group_counts = [[] for i in range(len(groups))]
+    # Open read data, categorize first two rows as
+    # version and dimension rows
     for l in gzip.open(data_file_name, 'rt'):
         if version is None:
             version = l
@@ -128,14 +131,19 @@ def main():
                 data_header = l.rstrip().split('\t')
             elif args.search_type == 'binary':
                 # binary search requires including tuples for sorting
+                t0_sort = time.time()
                 for field in l.rstrip().split('\t'):
                     data_header.append([field, i])
                     i += 1
             # Sort in preparation for binary search
+            # and time for benchmarking
                 data_header.sort(key=lambda tup: tup[0])
+                t1_sort = time.time()
+
         # Parallel array containing read counts for each sample
         A = l.rstrip().split('\t')
         if A[gene_name_col] == gene_name:
+            t0_search = time.time()
             for group_idx in range(len(groups)):
                 for member in members[group_idx]:
                     if args.search_type == 'linear':
@@ -144,9 +152,20 @@ def main():
                         members_idx = binary_search(member, data_header)
                     if members_idx != -1:
                         group_counts[group_idx].append(int(A[members_idx]))
+            t1_search = time.time()
             break
 
     data_viz.boxplot(group_counts, 'boxplot.png')
+    # Benchmarking information
+    if args.search_type == 'linear':
+        total_time = t1_search - t0_search
+        print("linear search time:", total_time)
+    elif args.search_type == 'binary':
+        total_time = t1_search - t0_sort
+        print("binary search time:",
+              total_time,
+              (t1_sort-t0_sort)/(total_time),
+              (t1_search-t0_search)/(total_time))
 
 
 if __name__ == '__main__':

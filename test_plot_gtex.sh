@@ -49,7 +49,7 @@ assert_exit_code 1
 
 SEARCH='binary'
 
-run bad_file_plot_gtex python plot_gtex.py \
+run binary_file_plot_gtex python plot_gtex.py \
 	--gene_reads $GENE_READS \
 	--sample_attributes $SAMPLE_ATTR \
 	--gene $GENE \

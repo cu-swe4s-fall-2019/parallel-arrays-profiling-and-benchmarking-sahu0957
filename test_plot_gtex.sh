@@ -47,3 +47,14 @@ run bad_file_plot_gtex python plot_gtex.py \
 	--search_type $SEARCH
 assert_exit_code 1 
 
+SEARCH='binary'
+
+run bad_file_plot_gtex python plot_gtex.py \
+	--gene_reads $GENE_READS \
+	--sample_attributes $SAMPLE_ATTR \
+	--gene $GENE \
+	--group_type $GROUP \
+	--output_file $OUTFILE \
+	--search_type $SEARCH
+assert_exit_code 0
+

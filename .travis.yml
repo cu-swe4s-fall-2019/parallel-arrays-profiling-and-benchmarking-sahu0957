@@ -15,3 +15,6 @@ before_install:
 script:
     - python test_data_viz.py
     - pycodestyle test_data_viz.py
+    - bash test_plot_gtex.sh
+    - python test_plot_gtex.py
+    - pycodestyle plot_gtex.py

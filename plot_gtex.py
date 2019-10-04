@@ -5,6 +5,7 @@ import gzip
 import os
 from os import path
 
+
 def linear_search(key, L):
     hit = -1
     for i in range(len(L)):
@@ -12,7 +13,7 @@ def linear_search(key, L):
         if key == curr:
             return i
     return -1
-        
+
 
 def binary_search(key, D):
     lo = -1
@@ -23,22 +24,35 @@ def binary_search(key, D):
         if key == D[mid][0]:
             return D[mid][1]
 
-        if ( key < D[mid][0] ):
+        if (key < D[mid][0]):
             hi = mid
         else:
             lo = mid
 
     return -1
 
+
 def main():
     parser = argparse.ArgumentParser(
-    description="plot gene expression boxplots of a gene across multiple samples")
-    parser.add_argument("--gene_reads", help="path to file containing gene reads", type=str)
-    parser.add_argument("--sample_attributes", help="path to file containing sample informtion", type=str)
+            description="plot gene expression boxplots of a\
+            gene across multiple samples")
+    parser.add_argument("--gene_reads",
+                        help="path to file containing gene reads", type=str)
+    parser.add_argument("--sample_attributes",
+                        help="path to file containing sample informtion",
+                        type=str)
     parser.add_argument("--gene", help="name of gene of interest", type=str)
-    parser.add_argument("--group_type", help="group info to search for", default="SMTS", type=str)
-    parser.add_argument("--output_file", help="path to save output PNG file", type=str)
-    parser.add_argument("--search_type", help="search type", default="linear", type=str)
+    parser.add_argument("--group_type",
+                        help="group info to search for",
+                        default="SMTS",
+                        type=str)
+    parser.add_argument("--output_file",
+                        help="path to save output PNG file",
+                        type=str)
+    parser.add_argument("--search_type",
+                        help="search type",
+                        default="linear",
+                        type=str)
 
     args = parser.parse_args()
     # Check to make sure proper search function is specified
@@ -48,7 +62,7 @@ def main():
         print('search parameter not recognized! Exiting...')
         sys.exit(1)
 
-    # Check to make sure all paths exist 
+    # Check to make sure all paths exist
     if path.exists(args.gene_reads):
         data_file_name = args.gene_reads
     else:
@@ -67,7 +81,7 @@ def main():
     sample_info_header = None
     for l in open(sample_info_file_name):
         # If the list is empty, then make the first line a header
-        if sample_info_header == None:
+        if sample_info_header is None:
             sample_info_header = l.strip().split('\t')
         else:
             # Add each line to the growing list until we've gone through
@@ -78,7 +92,7 @@ def main():
     sample_id_col_idx = linear_search(sample_id_col_name, sample_info_header)
     groups = []
     members = []
-   
+
     for row_idx in range(len(samples)):
         sample = samples[row_idx]
         sample_name = sample[sample_id_col_idx]
@@ -92,22 +106,22 @@ def main():
             members.append([])
         # Parallel array linking samples (members) to their tissue type (group)
         members[curr_group_idx].append(sample_name)
-    
+
     version = None
     dim = None
     data_header = None
     gene_name_col = 1
-    group_counts = [ [] for i in range(len(groups)) ]
+    group_counts = [[] for i in range(len(groups))]
     for l in gzip.open(data_file_name, 'rt'):
-        if version == None:
+        if version is None:
             version = l
             continue
 
-        if dim == None:
+        if dim is None:
             dim = [int(x) for x in l.strip().split()]
             continue
 
-        if data_header == None:
+        if data_header is None:
             data_header = []
             i = 0
             if args.search_type == 'linear':
@@ -133,6 +147,7 @@ def main():
             break
 
     data_viz.boxplot(group_counts, 'boxplot.png')
+
 
 if __name__ == '__main__':
     main()

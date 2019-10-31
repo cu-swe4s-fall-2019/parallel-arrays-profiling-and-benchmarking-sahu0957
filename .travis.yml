@@ -11,7 +11,7 @@ before_install:
     - conda install -y pycodestyle
     - conda install --yes python=3.6
     - conda install --yes matplotlib
-      
+    - git submodule update --init 
 script:
     - python test_data_viz.py
     - pycodestyle test_data_viz.py

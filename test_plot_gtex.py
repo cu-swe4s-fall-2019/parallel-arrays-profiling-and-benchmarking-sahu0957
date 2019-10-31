@@ -13,7 +13,24 @@ class TestPlotGtex(unittest.TestCase):
         sample_info_file_name='GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt'
         group = 'SMTS'
         r = plot_gtex.sample_hash_table(group, sample_info_file_name)
-        self.assertEqual(r, ("hashymashy", "SMTS"))
+        # r[1] and LinearProbe's K table should be the same
+        self.assertEqual(r[1], r[0].K)
+
+    def test_plot_gtex_hashtable_group_return_first(self):
+        # The first group returned should be Blood
+        sample_info_file_name='GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt'
+        group = 'SMTS'
+        r = plot_gtex.sample_hash_table(group, sample_info_file_name)
+        # r[1] and LinearProbe's K table should be the same
+        self.assertEqual(r[1][0], 'Blood')
+
+    def test_plot_gtex_hashtable_group_return_last(self):
+        # The first group returned should be Blood
+        sample_info_file_name='GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt'
+        group = 'SMTS'
+        r = plot_gtex.sample_hash_table(group, sample_info_file_name)
+        # The last group returned should be Bone Marrow
+        self.assertEqual(r[1][-1], 'Bone Marrow')
 
     def test_plot_gtex_linear_search_first(self):
         L = ['foo', 'bar', 'tar']

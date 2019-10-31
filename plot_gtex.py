@@ -4,9 +4,12 @@ import argparse
 import sys
 import gzip
 import os
+import importlib
 from os import path
-from hash_tables_sahu0957 import hash_tables
-from hash_tables_sahu0957 import hash_functions
+import importlib.util
+sys.path.append('hash-tables-sahu0957')
+hash_functions = importlib.import_module("hash-tables-sahu0957.hash_functions")
+hash_tables = importlib.import_module("hash-tables-sahu0957.hash_tables")
 
 def linear_search(key, L):
     hit = -1
@@ -64,6 +67,10 @@ def sample_hash_table(group_name, attributes_file):
     
     # sample_idx
     sample_id_col_idx = linear_search(sample_id_col_name, sample_info_header)
+    if group_col_idx == -1 or sample_id_col_idx == -1:
+        print('Column indexes not found!')
+        sys.exit(1)
+
     groups = []
     members = []
     
@@ -86,7 +93,7 @@ def sample_hash_table(group_name, attributes_file):
             search.append(value)
 
     # This will return a hash table, as well as each of the groups we've identified
-    # This is the same as the value LinearProbe.K
+    # 'groups' holds the same values as LinearProbe.K
     return samples_ht, groups 
 
 def main():

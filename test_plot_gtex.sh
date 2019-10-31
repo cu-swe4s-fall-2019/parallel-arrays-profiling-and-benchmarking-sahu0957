@@ -89,4 +89,4 @@ run hash_search_plot_gtex_firstval python plot_gtex.py \
 	--group_type $GROUP \
 	--output_file $OUTFILE \
 	--search_type $SEARCH
-assert_in_stdout 896
+assert_in_stdout "hashed successfully!"

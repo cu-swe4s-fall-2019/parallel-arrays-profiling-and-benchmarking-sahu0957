@@ -148,7 +148,10 @@ def main():
     gene_name = args.gene
     sample_id_col_name = 'SAMPID'
     samples = []
+    groups = []
     sample_info_header = None
+    target_group = []
+    parallel_array = []
     if args.search_type != 'hash':
         # This is the metadata file name. We'll build our first array
         # from here, and hash the samples. Their values will be
@@ -170,7 +173,6 @@ def main():
         # sample_idx
         sample_id_col_idx = linear_search(sample_id_col_name,
                                           sample_info_header)
-        groups = []
         members = []
 
         for row_idx in range(len(samples)):
@@ -233,8 +235,9 @@ def main():
                 t1_search = time.time()
                 break
     elif args.search_type == 'hash':
-        metadata_array, target_group = sample_hash_table(args.group_type,
-                                                   args.sample_attributes)
+        metadata_array, target_group =\
+            sample_hash_table(args.group_type,
+                              args.sample_attributes)
 
         target_group.sort()
         if metadata_array is None:
@@ -262,7 +265,8 @@ def main():
             if gene_counts[1] == args.gene:
                 # Create a second parallel array of gene counts
                 parallel_array = []
-                counts_hash = hash_tables.LinearProbe(1000000, hash_functions.h_rolling)
+                counts_hash = hash_tables.LinearProbe(1000000,
+                                                      hash_functions.h_rolling)
                 for i in range(2, len(data_header)):
                     counts_hash.add(data_header[i], int(gene_counts[i]))
                 for runs in target_group:
@@ -278,8 +282,8 @@ def main():
                     parallel_array.append(runs_counts)
         print('hashed successfully!')
         print('parallel_array:', parallel_array[0][0])
-        sys.exit()
-    data_viz.boxplot(group_counts, 'boxplot.png')
+        print('groups:', target_group)
+    data_viz.boxplot(parallel_array, target_group, 'hash_boxplot.png')
     # Benchmarking information
     if args.search_type == 'linear':
         total_time = t1_search - t0_search

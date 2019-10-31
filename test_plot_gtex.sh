@@ -90,6 +90,3 @@ run hash_search_plot_gtex_firstval python plot_gtex.py \
 	--output_file $OUTFILE \
 	--search_type $SEARCH
 assert_in_stdout 896
-
-
-

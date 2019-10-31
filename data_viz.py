@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 import math_lib
 import matplotlib
 matplotlib.use('Agg')
@@ -6,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 # Generate a boxplot from an input list
-def boxplot(L, out_file_name):
+def boxplot(L, x_axis_labs, out_file_name):
     # Empty files will be handled by returning None, to avoid
     # any errors in processing
     if len(L) == 0:
@@ -14,13 +15,15 @@ def boxplot(L, out_file_name):
     # List of lists will return multiple boxplots on the
     # same plot
     try:
-        width = 3
+        width = 6
         height = 3
         fig = plt.figure(figsize=(width, height), dpi=300)
         ax = fig.add_subplot(1, 1, 1)
+        ax.set_xticklabels([])
         plt.title('Boxplot')
         plt.xlabel('Cell Type')
         plt.ylabel('Expression Levels')
+        plt.xticks(np.arange(80), x_axis_labs, rotation = 'vertical')
         ax.boxplot(L)
         plt.savefig(out_file_name, bbox_inches='tight')
     except TypeError:

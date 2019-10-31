@@ -233,12 +233,11 @@ def main():
                 t1_search = time.time()
                 break
     elif args.search_type == 'hash':
-        meta_map, target_group = sample_hash_table(args.group_type,
+        metadata_array, target_group = sample_hash_table(args.group_type,
                                                    args.sample_attributes)
 
-        print("meta_map:", meta_map)
         target_group.sort()
-        if meta_map is None:
+        if metadata_array is None:
             print('cant find group! Exiting...')
             sys.exit(1)
         version = None
@@ -261,9 +260,24 @@ def main():
 
             gene_counts = l.rstrip().split('\t')
             if gene_counts[1] == args.gene:
-                print('found the gene!')
-                sys.exit()
-
+                # Create a second parallel array of gene counts
+                parallel_array = []
+                counts_hash = hash_tables.LinearProbe(1000000, hash_functions.h_rolling)
+                for i in range(2, len(data_header)):
+                    counts_hash.add(data_header[i], int(gene_counts[i]))
+                for runs in target_group:
+                    runs_counts = []
+                    run_finder = metadata_array.search(runs)
+                    if run_finder is None:
+                        continue
+                    for sample in run_finder:
+                        rna_count = counts_hash.search(sample)
+                        if rna_count is None:
+                            continue
+                        runs_counts.append(rna_count)
+                    parallel_array.append(runs_counts)
+        print('hashed successfully!')
+        print('parallel_array:', parallel_array[0][0])
         sys.exit()
     data_viz.boxplot(group_counts, 'boxplot.png')
     # Benchmarking information

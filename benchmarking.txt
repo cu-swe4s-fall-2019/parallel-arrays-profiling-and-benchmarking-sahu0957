@@ -1,12 +1,6 @@
-GNU timer:
 linear search option time
-17.09 158688
+linear search time: 14.173256635665894
 binary search option time
-1.84 161152
-
-Python tests:
-linear search time: 15.37869143
-binary search time: 0.2101125
-sort: 52%
-search, append, iterate over data file: 48%
-
+binary search time: 0.1845240592956543 0.08722785709671167 0.5170049744815557
+hash table search option time
+hash search time: 0.9628405570983887

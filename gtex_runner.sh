@@ -6,13 +6,13 @@ GROUP=SMTS
 OUTFILE='boxplot.png'
 SEARCH='linear'
 
-#python plot_gtex.py \
-#	--gene_reads $GENE_READS \
-#	--sample_attributes $SAMPLE_ATTR \
-#	--gene $GENE \
-#	--group_type $GROUP \
-#	--output_file $OUTFILE \
-#	--search_type $SEARCH
+python plot_gtex.py \
+	--gene_reads $GENE_READS \
+	--sample_attributes $SAMPLE_ATTR \
+	--gene $GENE \
+	--group_type $GROUP \
+	--output_file $OUTFILE \
+	--search_type $SEARCH
 
 SEARCH='binary'
 python plot_gtex.py \

@@ -71,7 +71,6 @@ def sample_hash_table(group_name, attributes_file):
 
     groups = []
     members = []
-    print("group_col_idx:", group_col_idx)
     if group_col_idx == -1 or sample_id_col_idx == -1:
         print('Column indexes not found!')
         return None, groups
@@ -234,7 +233,10 @@ def main():
                             group_counts[group_idx].append(int(A[members_idx]))
                 t1_search = time.time()
                 break
+
+        data_viz.boxplot(group_counts, groups, 'boxplot.png')
     elif args.search_type == 'hash':
+        t0_hash = time.time()
         metadata_array, target_group =\
             sample_hash_table(args.group_type,
                               args.sample_attributes)
@@ -280,9 +282,8 @@ def main():
                             continue
                         runs_counts.append(rna_count)
                     parallel_array.append(runs_counts)
+                t1_search = time.time()
         print('hashed successfully!')
-        print('parallel_array:', parallel_array[0][0])
-        print('groups:', target_group)
     data_viz.boxplot(parallel_array, target_group, 'hash_boxplot.png')
     # Benchmarking information
     if args.search_type == 'linear':
@@ -295,7 +296,8 @@ def main():
               (t1_sort-t0_sort)/(total_time),
               (t1_search-t0_search)/(total_time))
     elif args.search_type == 'hash':
-        pass
+        total_time = t1_search - t0_hash
+        print("hash search time:", total_time)
 
 
 if __name__ == '__main__':

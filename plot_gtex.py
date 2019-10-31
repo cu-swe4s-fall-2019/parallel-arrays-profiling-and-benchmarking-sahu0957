@@ -5,8 +5,8 @@ import sys
 import gzip
 import os
 from os import path
-from hash-tables-sahu0957 import hash_tables
-from hash-tables-sahu0957 import hash_functions
+from hash_tables_sahu0957 import hash_tables
+from hash_tables_sahu0957 import hash_functions
 
 def linear_search(key, L):
     hit = -1
@@ -33,6 +33,61 @@ def binary_search(key, D):
 
     return -1
 
+
+def sample_hash_table(group_name, attributes_file):
+    group_col_name = group_name
+    sample_id_col_name = 'SAMPID'
+    samples = []
+    sample_info_header = None
+    sample_info_file_name = attributes_file
+    
+    # Initiate sample hash table
+    samples_ht = hash_tables.LinearProbe(1000000, hash_functions.h_rolling)
+
+    # This is the metadata file name. We'll build our first array
+    # from here, and hash the samples. Their values will be 
+    # Tissue types, such that our table will be 
+    # [(hash_function(GTEX-XYZ), 'Blood')...]
+    for l in open(sample_info_file_name):
+        # If the list is empty, then make the first line a header
+        if sample_info_header is None:
+            sample_info_header = l.strip().split('\t')
+        else:
+            # Add each line to the growing list until we've gone through
+            # the whole file
+            # sample_info
+            samples.append(l.rstrip().split('\t'))
+    # Find the column index of the group name in the info file
+    
+    # target_idx
+    group_col_idx = linear_search(group_col_name, sample_info_header)
+    
+    # sample_idx
+    sample_id_col_idx = linear_search(sample_id_col_name, sample_info_header)
+    groups = []
+    members = []
+    
+    for row_idx in range(len(samples)):
+        sample = samples[row_idx]
+        ### HASH TABLE IMPLEMENTATION HERE ###
+        # We will search groups e.g. 'Blood', and add each value
+        # to a growing hash table. We'll append multiple hits together
+        # under the same hash value
+        key = sample[group_col_idx]
+        value = sample[sample_id_col_idx]
+        search = samples_ht.search(key)
+        if search == None:
+            # if we can't find it in our search, add the value to our hash table
+            samples_ht.add(key, [value])
+            groups.append(key)
+        else:
+            # if the key is already there, add the sample ID to the list of
+            # values that match it (e.g., ('Blood', [GTEX1, GTEX2...])
+            search.append(value)
+
+    # This will return a hash table, as well as each of the groups we've identified
+    # This is the same as the value LinearProbe.K
+    return samples_ht, groups 
 
 def main():
     parser = argparse.ArgumentParser(
@@ -81,10 +136,6 @@ def main():
     sample_id_col_name = 'SAMPID'
     samples = []
     sample_info_header = None
-
-    # Initiate sample hash table
-    samples_ht = hash_tables.LinearProbe(1000000, hash_functions.h_rolling)
-
     # This is the metadata file name. We'll build our first array
     # from here, and hash the samples. Their values will be 
     # Tissue types, such that our table will be 
@@ -127,7 +178,14 @@ def main():
         key = sample[group_col_idx]
         value = sample[sample_id_col_idx]
         search = samples_ht.search(key)
-
+        
+        if search == None:
+            # if we can't find it in our search, add the value to our hash table
+            samples_ht.add(key, [value])
+        else:
+            # if the key is already there, add the sample ID to the list of
+            # values that match it (e.g., ('Blood', [GTEX1, GTEX2...])
+            search.append(value)
         # The Table K in samples_ht will eventually contain all the keys
         # that we searched. We can use these to search it back later
         ### HASH TABLE IMPLEMENTATION HERE ###

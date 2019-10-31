@@ -7,6 +7,14 @@ from os import path
 
 class TestPlotGtex(unittest.TestCase):
 
+    def test_plot_gtex_hashtable_search(self):
+        # When we build the hash table, we should be able to retrieve a list of
+        # sample IDs and a hash table from the output
+        sample_info_file_name='GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt'
+        group = 'SMTS'
+        r = plot_gtex.sample_hash_table(group, sample_info_file_name)
+        self.assertEqual(r, ("hashymashy", "SMTS"))
+
     def test_plot_gtex_linear_search_first(self):
         L = ['foo', 'bar', 'tar']
         r = plot_gtex.linear_search('foo', L)

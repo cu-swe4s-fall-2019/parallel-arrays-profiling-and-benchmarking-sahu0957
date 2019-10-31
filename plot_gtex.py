@@ -68,12 +68,13 @@ def sample_hash_table(group_name, attributes_file):
 
     # sample_idx
     sample_id_col_idx = linear_search(sample_id_col_name, sample_info_header)
-    if group_col_idx == -1 or sample_id_col_idx == -1:
-        print('Column indexes not found!')
-        sys.exit(1)
 
     groups = []
     members = []
+    print("group_col_idx:", group_col_idx)
+    if group_col_idx == -1 or sample_id_col_idx == -1:
+        print('Column indexes not found!')
+        return None, groups
 
     for row_idx in range(len(samples)):
         sample = samples[row_idx]
@@ -123,7 +124,9 @@ def main():
 
     args = parser.parse_args()
     # Check to make sure proper search function is specified
-    if (args.search_type == 'linear' or args.search_type == 'binary'):
+    if (args.search_type == 'linear' or
+            args.search_type == 'binary'or
+            args.search_type == 'hash'):
         pass
     else:
         print('search parameter not recognized! Exiting...')
@@ -145,90 +148,142 @@ def main():
     gene_name = args.gene
     sample_id_col_name = 'SAMPID'
     samples = []
-    sample_info_header = None
-    # This is the metadata file name. We'll build our first array
-    # from here, and hash the samples. Their values will be
-    # Tissue types, such that our table will be
-    # [(hash_function(GTEX-XYZ), 'Blood')...]
-    for l in open(sample_info_file_name):
-        # If the list is empty, then make the first line a header
-        if sample_info_header is None:
-            sample_info_header = l.strip().split('\t')
-        else:
-            # Add each line to the growing list until we've gone through
-            # the whole file
-            # sample_info
-            samples.append(l.rstrip().split('\t'))
-    # Find the column index of the group name in the info file
-    # target_idx
-    group_col_idx = linear_search(group_col_name, sample_info_header)
-
-    # sample_idx
-    sample_id_col_idx = linear_search(sample_id_col_name, sample_info_header)
     groups = []
-    members = []
+    sample_info_header = None
+    target_group = []
+    parallel_array = []
+    if args.search_type != 'hash':
+        # This is the metadata file name. We'll build our first array
+        # from here, and hash the samples. Their values will be
+        # Tissue types, such that our table will be
+        # [(hash_function(GTEX-XYZ), 'Blood')...]
+        for l in open(sample_info_file_name):
+            # If the list is empty, then make the first line a header
+            if sample_info_header is None:
+                sample_info_header = l.strip().split('\t')
+            else:
+                # Add each line to the growing list until we've gone through
+                # the whole file
+                # sample_info
+                samples.append(l.rstrip().split('\t'))
+        # Find the column index of the group name in the info file
+        # target_idx
+        group_col_idx = linear_search(group_col_name, sample_info_header)
 
-    for row_idx in range(len(samples)):
-        sample = samples[row_idx]
-        sample_name = sample[sample_id_col_idx]
-        curr_group = sample[group_col_idx]
-        curr_group_idx = linear_search(curr_group, groups)
+        # sample_idx
+        sample_id_col_idx = linear_search(sample_id_col_name,
+                                          sample_info_header)
+        members = []
+
+        for row_idx in range(len(samples)):
+            sample = samples[row_idx]
+            sample_name = sample[sample_id_col_idx]
+            curr_group = sample[group_col_idx]
+            curr_group_idx = linear_search(curr_group, groups)
         # Only add to groups if the current index isn't found in our growing
         # groups list
-        if curr_group_idx == -1:
-            curr_group_idx = len(groups)
-            groups.append(curr_group)
-            members.append([])
+            if curr_group_idx == -1:
+                curr_group_idx = len(groups)
+                groups.append(curr_group)
+                members.append([])
         # Parallel array linking samples (members) to their tissue type (group)
-        members[curr_group_idx].append(sample_name)
-    version = None
-    dim = None
-    data_header = None
-    gene_name_col = 1
-    group_counts = [[] for i in range(len(groups))]
-    # Open read data, categorize first two rows as
-    # version and dimension rows
-    for l in gzip.open(data_file_name, 'rt'):
-        if version is None:
-            version = l
-            continue
+            members[curr_group_idx].append(sample_name)
+        version = None
+        dim = None
+        data_header = None
+        gene_name_col = 1
+        group_counts = [[] for i in range(len(groups))]
+        # Open read data, categorize first two rows as
+        # version and dimension rows
+        for l in gzip.open(data_file_name, 'rt'):
+            if version is None:
+                version = l
+                continue
 
-        if dim is None:
-            dim = [int(x) for x in l.strip().split()]
-            continue
+            if dim is None:
+                dim = [int(x) for x in l.strip().split()]
+                continue
 
-        if data_header is None:
-            data_header = []
-            i = 0
-            if args.search_type == 'linear':
+            if data_header is None:
+                data_header = []
+                i = 0
+                if args.search_type == 'linear':
+                    data_header = l.rstrip().split('\t')
+                elif args.search_type == 'binary':
+                    # binary search requires including tuples for sorting
+                    t0_sort = time.time()
+                    for field in l.rstrip().split('\t'):
+                        data_header.append([field, i])
+                        i += 1
+                # Sort in preparation for binary search
+                # and time for benchmarking
+                    data_header.sort(key=lambda tup: tup[0])
+                    t1_sort = time.time()
+
+            # Parallel array containing read counts for each sample
+            A = l.rstrip().split('\t')
+            if A[gene_name_col] == gene_name:
+                t0_search = time.time()
+                for group_idx in range(len(groups)):
+                    for member in members[group_idx]:
+                        if args.search_type == 'linear':
+                            members_idx = linear_search(member, data_header)
+                        else:
+                            members_idx = binary_search(member, data_header)
+                        if members_idx != -1:
+                            group_counts[group_idx].append(int(A[members_idx]))
+                t1_search = time.time()
+                break
+    elif args.search_type == 'hash':
+        metadata_array, target_group =\
+            sample_hash_table(args.group_type,
+                              args.sample_attributes)
+
+        target_group.sort()
+        if metadata_array is None:
+            print('cant find group! Exiting...')
+            sys.exit(1)
+        version = None
+        dim = None
+        data_header = None
+        # Open read data, categorize first two rows as
+        # version and dimension rows
+        for l in gzip.open(data_file_name, 'rt'):
+            if version is None:
+                version = l
+                continue
+
+            if dim is None:
+                dim = [int(x) for x in l.strip().split()]
+                continue
+
+            if data_header is None:
                 data_header = l.rstrip().split('\t')
-            elif args.search_type == 'binary':
-                # binary search requires including tuples for sorting
-                t0_sort = time.time()
-                for field in l.rstrip().split('\t'):
-                    data_header.append([field, i])
-                    i += 1
-            # Sort in preparation for binary search
-            # and time for benchmarking
-                data_header.sort(key=lambda tup: tup[0])
-                t1_sort = time.time()
+                continue
 
-        # Parallel array containing read counts for each sample
-        A = l.rstrip().split('\t')
-        if A[gene_name_col] == gene_name:
-            t0_search = time.time()
-            for group_idx in range(len(groups)):
-                for member in members[group_idx]:
-                    if args.search_type == 'linear':
-                        members_idx = linear_search(member, data_header)
-                    else:
-                        members_idx = binary_search(member, data_header)
-                    if members_idx != -1:
-                        group_counts[group_idx].append(int(A[members_idx]))
-            t1_search = time.time()
-            break
-
-    data_viz.boxplot(group_counts, 'boxplot.png')
+            gene_counts = l.rstrip().split('\t')
+            if gene_counts[1] == args.gene:
+                # Create a second parallel array of gene counts
+                parallel_array = []
+                counts_hash = hash_tables.LinearProbe(1000000,
+                                                      hash_functions.h_rolling)
+                for i in range(2, len(data_header)):
+                    counts_hash.add(data_header[i], int(gene_counts[i]))
+                for runs in target_group:
+                    runs_counts = []
+                    run_finder = metadata_array.search(runs)
+                    if run_finder is None:
+                        continue
+                    for sample in run_finder:
+                        rna_count = counts_hash.search(sample)
+                        if rna_count is None:
+                            continue
+                        runs_counts.append(rna_count)
+                    parallel_array.append(runs_counts)
+        print('hashed successfully!')
+        print('parallel_array:', parallel_array[0][0])
+        print('groups:', target_group)
+    data_viz.boxplot(parallel_array, target_group, 'hash_boxplot.png')
     # Benchmarking information
     if args.search_type == 'linear':
         total_time = t1_search - t0_search
@@ -239,6 +294,8 @@ def main():
               total_time,
               (t1_sort-t0_sort)/(total_time),
               (t1_search-t0_search)/(total_time))
+    elif args.search_type == 'hash':
+        pass
 
 
 if __name__ == '__main__':

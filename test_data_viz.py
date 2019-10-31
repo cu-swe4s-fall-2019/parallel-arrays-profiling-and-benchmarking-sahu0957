@@ -10,31 +10,31 @@ class TestDataViz(unittest.TestCase):
     def test_data_viz_multiple_lists_boxplot(self):
         L = [[1, 2, 3, 4, 5], [3, 3, 3, 3, 3],
              [5, 5, 5, 5, 5], [10, 20, 30, 40, 50]]
-        r = data_viz.boxplot(L, 'test_boxplot')
+        r = data_viz.boxplot(L, [], 'test_boxplot')
         self.assertTrue(path.exists('test_boxplot.png'))
 
     def test_data_viz_empty_list_boxplot(self):
         # Test handling of empty lists
         L = []
-        r = data_viz.boxplot(L, 'boxplot')
+        r = data_viz.boxplot(L, [], 'boxplot')
         self.assertEqual(r, None)
 
     def test_data_viz_constant_boxplot(self):
         # Test creation of boxplot.png
         L = [1, 2, 3, 4, 5]
-        data_viz.boxplot(L, 'boxplot.png')
+        data_viz.boxplot(L, [], 'boxplot.png')
         self.assertTrue(path.exists("boxplot.png"))
 
     def test_data_viz_nonnumber_boxplot(self):
         # Test handling of nonnumber entries
         L = ['foo', 'bar']
         with self.assertRaises(TypeError) as ex:
-            data_viz.boxplot(L, 'boxplot.png')
+            data_viz.boxplot(L, [], 'boxplot.png')
 
     def test_data_viz_float_boxplot(self):
         # Test handling of floats
         L = [1.0, 2.2, 5.1, 3.8, 4.9]
-        data_viz.boxplot(L, 'boxplot.png')
+        data_viz.boxplot(L, [], 'boxplot.png')
         self.assertTrue(path.exists("boxplot.png"))
 
     def test_data_viz_empty_list_histogram(self):
@@ -60,7 +60,7 @@ class TestDataViz(unittest.TestCase):
         # Test that the script returns None when
         # input list is empty
         L = []
-        r = data_viz.boxplot(L, 'combo.png')
+        r = data_viz.boxplot(L, [], 'combo.png')
         self.assertEqual(r, None)
 
     def test_data_viz_constant_combo(self):

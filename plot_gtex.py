@@ -5,7 +5,8 @@ import sys
 import gzip
 import os
 from os import path
-
+from hash-tables-sahu0957 import hash_tables
+from hash-tables-sahu0957 import hash_functions
 
 def linear_search(key, L):
     hit = -1
@@ -80,6 +81,14 @@ def main():
     sample_id_col_name = 'SAMPID'
     samples = []
     sample_info_header = None
+
+    # Initiate sample hash table
+    samples_ht = hash_tables.LinearProbe(1000000, hash_functions.h_rolling)
+
+    # This is the metadata file name. We'll build our first array
+    # from here, and hash the samples. Their values will be 
+    # Tissue types, such that our table will be 
+    # [(hash_function(GTEX-XYZ), 'Blood')...]
     for l in open(sample_info_file_name):
         # If the list is empty, then make the first line a header
         if sample_info_header is None:
@@ -87,13 +96,17 @@ def main():
         else:
             # Add each line to the growing list until we've gone through
             # the whole file
+            # sample_info
             samples.append(l.rstrip().split('\t'))
-        # Find the index of the group name in the info file
+    # Find the column index of the group name in the info file
+    # target_idx
     group_col_idx = linear_search(group_col_name, sample_info_header)
+    
+    # sample_idx
     sample_id_col_idx = linear_search(sample_id_col_name, sample_info_header)
     groups = []
     members = []
-
+    
     for row_idx in range(len(samples)):
         sample = samples[row_idx]
         sample_name = sample[sample_id_col_idx]
@@ -107,6 +120,17 @@ def main():
             members.append([])
         # Parallel array linking samples (members) to their tissue type (group)
         members[curr_group_idx].append(sample_name)
+        ### HASH TABLE IMPLEMENTATION HERE ###
+        # We will search groups e.g. 'Blood', and add each value
+        # to a growing hash table. We'll append multiple hits together
+        # under the same hash value
+        key = sample[group_col_idx]
+        value = sample[sample_id_col_idx]
+        search = samples_ht.search(key)
+
+        # The Table K in samples_ht will eventually contain all the keys
+        # that we searched. We can use these to search it back later
+        ### HASH TABLE IMPLEMENTATION HERE ###
 
     version = None
     dim = None
